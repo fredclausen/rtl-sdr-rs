@@ -27,6 +27,7 @@ pub enum DirectSampleMode {
 pub struct RtlSdr {
     sdr: Sdr,
 }
+
 impl RtlSdr {
     pub fn open(index: usize) -> Result<RtlSdr> {
         let dev = Device::new(index)?;

@@ -36,6 +36,7 @@ fn test_read_reg_u8() {
     assert_eq!(data_expected, result);
 }
 
+// FIXME: this test fails and I don't know why
 #[test]
 fn test_read_reg_u16() {
     let block = BLOCK_SYS;
