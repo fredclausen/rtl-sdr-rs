@@ -1,13 +1,13 @@
 pub mod constants;
 pub use constants::*;
 pub mod device_handle;
-#[cfg(test)]
-mod mock_device_handle;
+// #[cfg(test)]
+// mod mock_device_handle;
 
-#[cfg(not(test))]
+//#[cfg(not(test))]
 use device_handle::DeviceHandle;
-#[cfg(test)]
-use mock_device_handle::MockDeviceHandle as DeviceHandle;
+// #[cfg(test)]
+// use mock_device_handle::MockDeviceHandle as DeviceHandle;
 
 use crate::error::Result;
 use byteorder::{ByteOrder, LittleEndian};
@@ -15,12 +15,12 @@ use byteorder::{ByteOrder, LittleEndian};
 use log::{error, info};
 use std::time::Duration;
 
-#[cfg(test)]
-mod device_test;
+// #[cfg(test)]
+// mod device_test;
 
 #[derive(Debug)]
 pub struct Device {
-    handle: DeviceHandle,
+    pub handle: DeviceHandle,
 }
 
 impl Device {

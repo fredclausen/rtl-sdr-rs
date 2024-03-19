@@ -1,6 +1,6 @@
 //! Mock version of rusb::DeviceHandle
-use crate::error::Result;
 use mockall::mock;
+use rtlsdr_rs::error::Result;
 
 use std::time::Duration;
 

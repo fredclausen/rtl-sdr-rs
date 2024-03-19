@@ -1,9 +1,14 @@
+mod common;
+
+#[cfg(not(test))]
+use rtlsdr_rs::device::DeviceHandle;
+#[cfg(test)]
+use common::MockDeviceHandle as DeviceHandle;
+
 use mockall::predicate::{self, eq};
+use rtlsdr_rs::device::{Device, EEPROM_SIZE};
 
-use crate::device::mock_device_handle::MockDeviceHandle;
-use crate::device::{Device, EEPROM_SIZE};
-
-use super::{BLOCK_SYS, CTRL_IN, CTRL_OUT, CTRL_TIMEOUT, GPO};
+use rtlsdr_rs::device::constants::{BLOCK_SYS, CTRL_IN, CTRL_OUT, CTRL_TIMEOUT, GPO};
 
 #[test]
 fn test_read_reg_u8() {
@@ -12,7 +17,7 @@ fn test_read_reg_u8() {
     let addr = GPO;
     let data_expected = 0x12_u16;
 
-    let mut mock_handle = MockDeviceHandle::new();
+    let mut mock_handle = DeviceHandle::new();
     mock_handle
         .expect_read_control()
         .times(1)

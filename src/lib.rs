@@ -1,7 +1,7 @@
 //! # rtlsdr Library
 //! Library for interfacing with an RTL-SDR device.
 
-mod device;
+pub mod device;
 pub mod error;
 mod rtlsdr;
 mod tuners;

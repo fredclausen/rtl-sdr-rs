@@ -40,12 +40,15 @@ impl DeviceHandle {
             let device_desc = device.device_descriptor().map(|d| d)?;
             for dev in KNOWN_DEVICES.iter() {
                 if device_desc.vendor_id() == dev.vid && device_desc.product_id() == dev.pid {
-                    let serial_index = if let Some(serial_index) = device_desc.serial_number_string_index() {
-                        let handle = device.open()?;
-                        handle.read_string_descriptor_ascii(serial_index).unwrap_or_default()
-                    } else {
-                        "".to_string()
-                    };
+                    let serial_index =
+                        if let Some(serial_index) = device_desc.serial_number_string_index() {
+                            let handle = device.open()?;
+                            handle
+                                .read_string_descriptor_ascii(serial_index)
+                                .unwrap_or_default()
+                        } else {
+                            "".to_string()
+                        };
 
                     let known_device = KnownDevice {
                         name: dev.description.to_string(),
@@ -71,7 +74,8 @@ impl DeviceHandle {
                 name,
                 serial,
                 device_desc.vendor_id(),
-                device_desc.product_id());
+                device_desc.product_id()
+            );
         }
     }
 
