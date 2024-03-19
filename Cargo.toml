@@ -10,14 +10,14 @@ rtl_sdr_blog = []
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rusb = "0.9"
-byteorder = "1"
-log = "0.4"
-mockall = "0.11"
+rusb = "0.9.3"
+byteorder = "1.5.0"
+log = "0.4.21"
+mockall = "0.12.1"
 
 [dev-dependencies]
-rusb = "0.9"
-byteorder = "1"
-ctrlc = "3.2.3"
-num-complex = "0.4"
-stderrlog = "0.5"
+rusb = "0.9.3"
+byteorder = "1.5.0"
+ctrlc = "3.4.4"
+num-complex = "0.4.5"
+stderrlog = "0.6.0"
