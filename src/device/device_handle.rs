@@ -17,6 +17,7 @@ impl DeviceHandle {
         Ok(DeviceHandle { handle: handle })
     }
 
+    // FIXME: Use the device index!
     pub fn open_device<T: UsbContext>(
         context: &mut T,
         _index: usize,
