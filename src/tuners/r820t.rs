@@ -245,7 +245,6 @@ const FREQ_RANGES: [FreqRange; 21] = [
     },
 ];
 
-#[allow(dead_code)]
 enum TunerType {
     TunerRadio,
     TunerAnalogTv,
@@ -253,7 +252,6 @@ enum TunerType {
 }
 
 #[derive(Debug)]
-#[allow(dead_code)]
 enum XtalCapValue {
     XtalLowCap30p,
     XtalLowCap20p,
@@ -262,7 +260,6 @@ enum XtalCapValue {
     XtalHighCap0p,
 }
 
-#[allow(dead_code)]
 const XTAL_CAPACITOR_VALUES: [u8; 5] = [
     0x0b, // XTAL_LOW_CAP_30P
     0x02, // XTAL_LOW_CAP_20P
@@ -271,7 +268,6 @@ const XTAL_CAPACITOR_VALUES: [u8; 5] = [
     0x10, // XTAL_HIGH_CAP_0P
 ];
 
-#[allow(dead_code)]
 enum DeliverySystem {
     SysUndefined,
     SysDvbt,

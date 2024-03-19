@@ -345,7 +345,6 @@ impl RtlSdr {
         Ok(self.set_gpio(0, on)?)
     }
 
-    #[allow(dead_code)]
     pub fn get_xtal_freq(&self) -> u32 {
         (self.xtal as f32 * (1.0 + self.ppm_correction as f32 / 1e6)) as u32
     }
@@ -354,7 +353,6 @@ impl RtlSdr {
         (self.tuner_xtal as f32 * (1.0 + self.ppm_correction as f32 / 1e6)) as u32
     }
 
-    #[allow(dead_code)]
     pub fn set_xtal_freq(&mut self, rtl_freq: u32, tuner_freq: u32) -> Result<()> {
         if rtl_freq > 0 && (rtl_freq < MIN_RTL_XTAL_FREQ || rtl_freq > MAX_RTL_XTAL_FREQ) {
             return Err(RtlsdrErr(format!(
