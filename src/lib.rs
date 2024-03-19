@@ -29,12 +29,20 @@ pub struct RtlSdr {
 }
 
 impl RtlSdr {
-    pub fn open(index: usize) -> Result<RtlSdr> {
-        let dev = Device::new(index)?;
+    pub fn open_by_index(index: usize) -> Result<RtlSdr> {
+        let dev = Device::new_by_index(index)?;
         let mut sdr = Sdr::new(dev);
         sdr.init()?;
         Ok(RtlSdr { sdr: sdr })
     }
+
+    pub fn open_by_serial(serial: &str) -> Result<RtlSdr> {
+        let dev = Device::new_by_serial(serial)?;
+        let mut sdr = Sdr::new(dev);
+        sdr.init()?;
+        Ok(RtlSdr { sdr: sdr })
+    }
+
     pub fn close(&mut self) -> Result<()> {
         // TODO: wait until async is inactive
         Ok(self.sdr.deinit_baseband()?)

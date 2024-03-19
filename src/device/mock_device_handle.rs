@@ -7,7 +7,8 @@ use std::time::Duration;
 mock! {
     #[derive(Debug)]
     pub DeviceHandle {
-        pub fn open(index: usize) -> Result<Self>;
+        pub fn open_by_index(index: usize) -> Result<Self>;
+        pub fn open_by_serial(serial: &str) -> Result<Self>;
         pub fn claim_interface(&mut self, iface: u8) -> Result<()>;
         pub fn reset(&mut self) -> Result<()>;
         pub fn read_control(

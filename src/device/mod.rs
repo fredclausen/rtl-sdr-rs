@@ -24,9 +24,15 @@ pub struct Device {
 }
 
 impl Device {
-    pub fn new(index: usize) -> Result<Device> {
+    pub fn new_by_index(index: usize) -> Result<Device> {
         Ok(Device {
-            handle: DeviceHandle::open(index)?,
+            handle: DeviceHandle::open_by_index(index)?,
+        })
+    }
+
+    pub fn new_by_serial(serial: &str) -> Result<Device> {
+        Ok(Device {
+            handle: DeviceHandle::open_by_serial(serial)?,
         })
     }
 

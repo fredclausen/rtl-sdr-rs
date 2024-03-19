@@ -19,9 +19,15 @@ pub struct KnownDevice<T: UsbContext> {
 }
 
 impl DeviceHandle {
-    pub fn open(index: usize) -> Result<Self> {
+    pub fn open_by_index(index: usize) -> Result<Self> {
         let mut context = Context::new()?;
-        let handle = DeviceHandle::open_device(&mut context, index)?;
+        let handle = DeviceHandle::open_device_by_index(&mut context, index)?;
+        Ok(DeviceHandle { handle: handle })
+    }
+
+    pub fn open_by_serial(serial: &str) -> Result<Self> {
+        let mut context = Context::new()?;
+        let handle = DeviceHandle::open_device_by_serial(&mut context, serial)?;
         Ok(DeviceHandle { handle: handle })
     }
 
@@ -69,7 +75,7 @@ impl DeviceHandle {
         }
     }
 
-    pub fn open_device<T: UsbContext>(
+    pub fn open_device_by_index<T: UsbContext>(
         context: &mut T,
         index: usize,
     ) -> Result<rusb::DeviceHandle<T>> {
@@ -81,6 +87,22 @@ impl DeviceHandle {
             let device = devices.get(index).unwrap();
             let handle = device.device.open()?;
             return Ok(handle);
+        }
+
+        Err(RtlsdrErr(format!("No device found")))
+    }
+
+    pub fn open_device_by_serial<T: UsbContext>(
+        context: &mut T,
+        serial: &str,
+    ) -> Result<rusb::DeviceHandle<T>> {
+        let devices = DeviceHandle::filter_known_devices(context)?;
+        DeviceHandle::print_known_devices(devices.clone());
+
+        for device in devices.iter() {
+            if device.serial == serial {
+                return Ok(device.device.open()?);
+            }
         }
 
         Err(RtlsdrErr(format!("No device found")))

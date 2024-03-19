@@ -85,7 +85,7 @@ fn main() {
 /// SHUTDOWN flag is set to true.
 fn receive(shutdown: &AtomicBool, radio_config: RadioConfig, tx: Sender<Vec<u8>>) {
     // Open device
-    let mut sdr = RtlSdr::open(0).expect("Failed to open device");
+    let mut sdr = RtlSdr::open_by_index(0).expect("Failed to open device");
     // Config receiver
     config_sdr(
         &mut sdr,

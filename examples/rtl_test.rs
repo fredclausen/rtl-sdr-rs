@@ -21,7 +21,7 @@ fn main() -> Result<()> {
     }
 
     // Open device
-    let mut sdr = RtlSdr::open(0).expect("Unable to open SDR device!");
+    let mut sdr = RtlSdr::open_by_index(0).expect("Unable to open SDR device!");
     // println!("{:#?}", sdr);
 
     let gains = sdr.get_tuner_gains()?;
