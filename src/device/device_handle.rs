@@ -69,7 +69,7 @@ impl DeviceHandle {
             let device_desc = dev.device.device_descriptor().unwrap();
             let name = dev.name.clone();
             let serial = dev.serial.clone();
-            println!(
+            info!(
                 "Found device: Name: {} Serial: {} VID: {:04x} PID: {:04x}",
                 name,
                 serial,

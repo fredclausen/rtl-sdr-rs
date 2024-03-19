@@ -5,6 +5,8 @@ pub mod device;
 pub mod error;
 pub mod rtlsdr;
 pub mod tuners;
+#[macro_use]
+extern crate log;
 
 use device::Device;
 use error::Result;

@@ -1,6 +1,8 @@
 use ctrlc;
 use rtlsdr_rs::{error::Result, RtlSdr};
 use std::sync::atomic::{AtomicBool, Ordering};
+use log::{info, error};
+use sdre_rust_logging::SetupLogging;
 
 // enum TestMode {
 //     NO_BENCHMARK,
@@ -10,22 +12,25 @@ use std::sync::atomic::{AtomicBool, Ordering};
 const DEFAULT_BUF_LENGTH: usize = 16 * 16384;
 
 const SAMPLE_RATE: u32 = 2_048_000;
+const FREQ: u64 = 10900000000;
 
 fn main() -> Result<()> {
+    // set the log level
+    "debug".enable_logging();
+
     // Create shutdown flag and set it when ctrl-c signal caught
     static SHUTDOWN: AtomicBool = AtomicBool::new(false);
     if let Err(e) = ctrlc::set_handler(|| {
         SHUTDOWN.swap(true, Ordering::Relaxed);
     }) {
-        println!("Error setting Ctrl-C handler: {}", e);
+        error!("Error setting Ctrl-C handler: {}", e);
     }
 
     // Open device
     let mut sdr = RtlSdr::open_by_index(0).expect("Unable to open SDR device!");
-    // println!("{:#?}", sdr);
 
     let gains = sdr.get_tuner_gains()?;
-    println!(
+    info!(
         "Supported gain values ({}): {:?}",
         gains.len(),
         gains
@@ -34,19 +39,23 @@ fn main() -> Result<()> {
             .collect::<Vec<_>>()
     );
 
+    // set frequency
+    info!("Set frequency to {} MHz", FREQ as f32 / 1_000_000.0);
+    sdr.set_center_freq(FREQ)?;
+
     // Set sample rate
     sdr.set_sample_rate(SAMPLE_RATE)?;
-    println!("Sampling at {} S/s", sdr.get_sample_rate());
+    info!("Sampling at {} S/s", sdr.get_sample_rate());
 
     // Enable test mode
-    println!("Enable test mode");
+    info!("Enable test mode");
     sdr.set_testmode(true)?;
 
     // Reset the endpoint before we try to read from it (mandatory)
-    println!("Reset buffer");
+    info!("Reset buffer");
     sdr.reset_buffer()?;
 
-    println!("Reading samples in sync mode...");
+    info!("Reading samples in sync mode...");
     let mut buf: [u8; DEFAULT_BUF_LENGTH] = [0; DEFAULT_BUF_LENGTH];
     loop {
         if SHUTDOWN.load(Ordering::Relaxed) {
@@ -54,18 +63,19 @@ fn main() -> Result<()> {
         }
         let n = sdr.read_sync(&mut buf);
         if n.is_err() {
-            println!("Read error: {:#?}", n);
+           error!("Read error: {:#?}", n);
         } else {
             let n = n.unwrap();
             if n < DEFAULT_BUF_LENGTH {
-                println!("Short read ({:#?}), samples lost, exiting!", n);
+                error!("Short read ({:#?}), samples lost, exiting!", n);
                 break;
             }
+
+            info!("read {} samples!", n);
         }
-        //println!("read {} samples!", n.unwrap());
     }
 
-    println!("Close");
+    info!("Close");
     sdr.close()?;
     Ok(())
 }
