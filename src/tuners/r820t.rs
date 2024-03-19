@@ -245,14 +245,14 @@ const FREQ_RANGES: [FreqRange; 21] = [
     },
 ];
 
-enum TunerType {
+pub enum TunerType {
     TunerRadio,
     TunerAnalogTv,
     TunerDigitalTv,
 }
 
 #[derive(Debug)]
-enum XtalCapValue {
+pub enum XtalCapValue {
     XtalLowCap30p,
     XtalLowCap20p,
     XtalLowCap10p,
@@ -260,7 +260,7 @@ enum XtalCapValue {
     XtalHighCap0p,
 }
 
-const XTAL_CAPACITOR_VALUES: [u8; 5] = [
+pub const XTAL_CAPACITOR_VALUES: [u8; 5] = [
     0x0b, // XTAL_LOW_CAP_30P
     0x02, // XTAL_LOW_CAP_20P
     0x01, // XTAL_LOW_CAP_10P
@@ -268,7 +268,7 @@ const XTAL_CAPACITOR_VALUES: [u8; 5] = [
     0x10, // XTAL_HIGH_CAP_0P
 ];
 
-enum DeliverySystem {
+pub enum DeliverySystem {
     SysUndefined,
     SysDvbt,
     SysDvbt2,
