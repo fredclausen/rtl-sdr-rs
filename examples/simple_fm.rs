@@ -72,7 +72,7 @@ fn main() {
                 break;
             }
             // Read chunk of file  data into buf
-            let n = f.read(&mut buf[..]).expect("failed to read");
+            let _n = f.read(&mut buf[..]).expect("failed to read");
             // Demodulate data from file
             let result = demod.demodulate(buf.to_vec());
             // Output resulting audio data to stdout
@@ -121,7 +121,10 @@ fn receive(shutdown: &AtomicBool, radio_config: RadioConfig, tx: Sender<Vec<u8>>
             break;
         }
         // Send received data through the channel to the processor thread
-        tx.send(buf.to_vec());
+        if let Err(e) = tx.send(buf.to_vec()) {
+            info!("Error sending data to processor: {:#?}", e);
+            break;
+        }
     }
     // Shut down the device and exit
     info!("Close");
@@ -370,8 +373,14 @@ fn output(buf: Vec<i16>) {
     let slice_u8: &[u8] = unsafe {
         slice::from_raw_parts(buf.as_ptr() as *const u8, buf.len() * mem::size_of::<i16>())
     };
-    out.write_all(slice_u8);
-    out.flush();
+    if let Err(e) = out.write_all(slice_u8) {
+        info!("Error writing to stdout: {:#?}", e);
+        return;
+    }
+
+    if let Err(e) = out.flush() {
+        info!("Error flushing stdout: {:#?}", e);
+    }
 }
 
 /// Convert a vector of i16 complex components (real and imaginary) to a vector of i32 Complex values

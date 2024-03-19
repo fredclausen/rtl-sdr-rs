@@ -36,7 +36,7 @@ pub struct RtlSdr {
     corr: i32, // PPM
     force_bt: bool,
     force_ds: bool,
-    fir: [i32; FIR_LEN],
+    //fir: [i32; FIR_LEN],
 }
 
 impl RtlSdr {
@@ -55,7 +55,7 @@ impl RtlSdr {
             corr: 0,
             force_bt: false,
             force_ds: false,
-            fir: *DEFAULT_FIR,
+            //fir: *DEFAULT_FIR,
         }
     }
 
