@@ -36,6 +36,7 @@ struct Args {
     gain: f32,
     serial: Option<String>,
     index: Option<usize>,
+    print_devices: bool,
 }
 
 impl Args {
@@ -53,6 +54,7 @@ impl Args {
         let mut gain: f32 = -1.0;
         let mut serial = None;
         let mut index = None;
+        let mut print_devices = false;
 
         while let Some(arg) = arg_it.next() {
             match arg.as_str() {
@@ -60,50 +62,56 @@ impl Args {
                     log_level = arg_it
                         .next()
                         .ok_or(ArgParseError::InvalidLogLevel(arg.clone()))?;
-                },
+                }
                 "--display-number-of-samples" | "-d" => {
                     display_number_of_samples = true;
-                },
+                }
                 "--display-buffer" | "-b" => {
                     display_buffer = true;
-                },
+                }
                 "--frequency" | "-f" => {
                     frequency = arg_it
                         .next()
                         .ok_or(ArgParseError::BadFrequency(arg.clone()))?
                         .parse()
                         .map_err(|_| ArgParseError::BadFrequency(arg.clone()))?;
-                },
+                }
                 "--parts-per-million" | "-p" => {
                     parts_per_million = arg_it
                         .next()
                         .ok_or(ArgParseError::BadValue(arg.clone()))?
                         .parse()
                         .map_err(|_| ArgParseError::BadValue(arg.clone()))?;
-                },
+                }
                 "--gain" | "-g" => {
                     gain = arg_it
                         .next()
                         .ok_or(ArgParseError::BadValue(format!("Gain {}", arg.clone())))?
                         .parse()
                         .map_err(|_| ArgParseError::BadValue(format!("Gain {}", arg.clone())))?;
-                },
+                }
                 "--serial" | "-s" => {
                     serial = Some(
                         arg_it
                             .next()
                             .ok_or(ArgParseError::BadValue(format!("Serial {}", arg.clone())))?,
                     );
-                },
+                }
                 "--index" | "-i" => {
                     index = Some(
                         arg_it
                             .next()
                             .ok_or(ArgParseError::BadValue(format!("Index {}", arg.clone())))?
                             .parse()
-                            .map_err(|_| ArgParseError::BadValue(format!("Index {}", arg.clone())))?,
+                            .map_err(|_| {
+                                ArgParseError::BadValue(format!("Index {}", arg.clone()))
+                            })?,
                     );
-                },
+                }
+                "--print-devices" => {
+                    print_devices = true;
+                    break;
+                }
                 "--help" => {
                     println!("{}", Args::help());
                     exit(0);
@@ -114,13 +122,13 @@ impl Args {
             }
         }
 
-        if serial.is_some() && index.is_some() {
+        if serial.is_some() && index.is_some() && !print_devices {
             return Err(ArgParseError::SerialAndIndexBothSet(
                 "Serial and index cannot both be set".to_string(),
             ));
         }
 
-        if serial.is_none() && index.is_none() {
+        if serial.is_none() && index.is_none() && !print_devices {
             warn!("No serial or index set, using index 0");
             index = Some(0);
         }
@@ -134,6 +142,7 @@ impl Args {
             gain: gain * 10.0,
             serial,
             index,
+            print_devices,
         })
     }
 
@@ -150,16 +159,19 @@ impl Args {
 
     fn help() -> String {
         format!(
-            "Usage: {}\n
-            --serial / -s: The serial number of the device to use.\n
-            --index / -i: The index of the device to use.\n
-            --loglevel / -l: The log level to use. Default is 'info'.\n
-            --frequency / -f: The frequency to tune to. In hertz. Default is 1090000000.\n
-            --display-number-of-samples / -d: Display the number of samples read.\n
-            --display-buffer / -b: Display the buffer read.\n
-            --parts-per-million / -p: The parts per million error to set. Default is 0.\n
-            --gain / -g: The gain to set. Default is 0.\n
-            --help / -h: Display this help message.",
+            "Usage: {}
+| Short Option | Long Option                 | Description                                                  |
+|--------------|-----------------------------|--------------------------------------------------------------|
+| -s           | --serial                    | The serial number of the device to use.                      |
+| -i           | --index                     | The index of the device to use.                              |
+| -l           | --loglevel                  | The log level to use. Default is 'info'.                     |
+| -f           | --frequency                 | The frequency to tune to. In hertz. Default is 1090000000.   |
+| -d           | --display-number-of-samples | Display the number of samples read.                          |
+| -b           | --display-buffer            | Display the buffer read.                                     |
+| -p           | --parts-per-million         | The parts per million error to set. Default is 0.            |
+| -g           | --gain                      | The gain to set. Default is 0.                               |
+|              | --print-devices             | Print the known devices and exit.                            |
+| -h           | --help                      | Display this help message.                                   |",
             env!("CARGO_PKG_NAME")
         )
     }
@@ -170,8 +182,13 @@ fn main() -> Result<()> {
     // temporarily set log level to info so we can see the args
     "info".enable_logging();
     let args: Args = Args::parse(std::env::args());
-
     args.log_level.enable_logging();
+
+    // if print devices, print and exit
+    if args.print_devices {
+        RtlSdr::list_and_print_known_devices()?;
+        exit(0);
+    }
 
     // Create shutdown flag and set it when ctrl-c signal caught
     static SHUTDOWN: AtomicBool = AtomicBool::new(false);
@@ -179,6 +196,7 @@ fn main() -> Result<()> {
         SHUTDOWN.swap(true, Ordering::Relaxed);
     }) {
         error!("Error setting Ctrl-C handler: {}", e);
+        exit(1);
     }
 
     // Open device
@@ -212,11 +230,14 @@ fn main() -> Result<()> {
         TunerGain::Auto
     } else {
         let temp_gain = gains
-        .iter()
-        .min_by(|a, b| {
-            (args.gain - **a as f32).abs().partial_cmp(&(args.gain - **b as f32).abs()).unwrap()
-        })
-        .unwrap();
+            .iter()
+            .min_by(|a, b| {
+                (args.gain - **a as f32)
+                    .abs()
+                    .partial_cmp(&(args.gain - **b as f32).abs())
+                    .unwrap()
+            })
+            .unwrap();
 
         TunerGain::Manual(*temp_gain)
     };

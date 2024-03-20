@@ -36,6 +36,12 @@ impl Device {
         })
     }
 
+    pub fn list_and_print_known_devices() -> Result<()> {
+        let mut context = rusb::Context::new()?;
+        DeviceHandle::list_and_print_known_devices(&mut context)?;
+        Ok(())
+    }
+
     pub fn claim_interface(&mut self, iface: u8) -> Result<()> {
         Ok(self.handle.claim_interface(iface)?)
     }

@@ -79,6 +79,12 @@ impl DeviceHandle {
         }
     }
 
+    pub fn list_and_print_known_devices<T: UsbContext>(context: &mut T) -> Result<()> {
+        let devices = DeviceHandle::filter_known_devices(context)?;
+        DeviceHandle::print_known_devices(devices);
+        Ok(())
+    }
+
     pub fn open_device_by_index<T: UsbContext>(
         context: &mut T,
         index: usize,

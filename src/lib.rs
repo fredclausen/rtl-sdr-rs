@@ -39,8 +39,6 @@ impl From<i32> for TunerGain {
     }
 }
 
-
-
 #[derive(Debug)]
 pub enum DirectSampleMode {
     Off,
@@ -65,6 +63,10 @@ impl RtlSdr {
         let mut sdr = Sdr::new(dev);
         sdr.init()?;
         Ok(RtlSdr { sdr: sdr })
+    }
+
+    pub fn list_and_print_known_devices() -> Result<()> {
+        Device::list_and_print_known_devices()
     }
 
     pub fn close(&mut self) -> Result<()> {
