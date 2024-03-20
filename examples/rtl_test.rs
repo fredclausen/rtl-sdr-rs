@@ -1,5 +1,5 @@
 use ctrlc;
-use log::{error, info};
+use log::{error, info, warn};
 use rtlsdr_rs::{error::Result, RtlSdr, TunerGain};
 use sdre_rust_logging::SetupLogging;
 use std::{
@@ -23,6 +23,7 @@ enum ArgParseError {
     UnknownArg(String),
     BadFrequency(String),
     BadValue(String),
+    SerialAndIndexBothSet(String),
 }
 
 #[derive(Debug)]
@@ -33,6 +34,8 @@ struct Args {
     frequency: u32,
     parts_per_million: i32,
     gain: f32,
+    serial: Option<String>,
+    index: Option<usize>,
 }
 
 impl Args {
@@ -48,6 +51,8 @@ impl Args {
         let mut frequency = FREQ;
         let mut parts_per_million = 0;
         let mut gain: f32 = -1.0;
+        let mut serial = None;
+        let mut index = None;
 
         while let Some(arg) = arg_it.next() {
             match arg.as_str() {
@@ -83,6 +88,22 @@ impl Args {
                         .parse()
                         .map_err(|_| ArgParseError::BadValue(format!("Gain {}", arg.clone())))?;
                 },
+                "--serial" | "-s" => {
+                    serial = Some(
+                        arg_it
+                            .next()
+                            .ok_or(ArgParseError::BadValue(format!("Serial {}", arg.clone())))?,
+                    );
+                },
+                "--index" | "-i" => {
+                    index = Some(
+                        arg_it
+                            .next()
+                            .ok_or(ArgParseError::BadValue(format!("Index {}", arg.clone())))?
+                            .parse()
+                            .map_err(|_| ArgParseError::BadValue(format!("Index {}", arg.clone())))?,
+                    );
+                },
                 "--help" => {
                     println!("{}", Args::help());
                     exit(0);
@@ -92,6 +113,18 @@ impl Args {
                 }
             }
         }
+
+        if serial.is_some() && index.is_some() {
+            return Err(ArgParseError::SerialAndIndexBothSet(
+                "Serial and index cannot both be set".to_string(),
+            ));
+        }
+
+        if serial.is_none() && index.is_none() {
+            warn!("No serial or index set, using index 0");
+            index = Some(0);
+        }
+
         Ok(Args {
             log_level,
             display_number_of_samples,
@@ -99,6 +132,8 @@ impl Args {
             frequency,
             parts_per_million,
             gain: gain * 10.0,
+            serial,
+            index,
         })
     }
 
@@ -116,6 +151,8 @@ impl Args {
     fn help() -> String {
         format!(
             "Usage: {}\n
+            --serial / -s: The serial number of the device to use.\n
+            --index / -i: The index of the device to use.\n
             --loglevel / -l: The log level to use. Default is 'info'.\n
             --frequency / -f: The frequency to tune to. In hertz. Default is 1090000000.\n
             --display-number-of-samples / -d: Display the number of samples read.\n
@@ -130,6 +167,8 @@ impl Args {
 
 fn main() -> Result<()> {
     // parse args
+    // temporarily set log level to info so we can see the args
+    "info".enable_logging();
     let args: Args = Args::parse(std::env::args());
 
     args.log_level.enable_logging();
@@ -143,7 +182,12 @@ fn main() -> Result<()> {
     }
 
     // Open device
-    let mut sdr = RtlSdr::open_by_index(0).expect("Unable to open SDR device!");
+
+    let mut sdr = if let Some(serial) = args.serial {
+        RtlSdr::open_by_serial(&serial)?
+    } else {
+        RtlSdr::open_by_index(args.index.unwrap())?
+    };
 
     let gains = sdr.get_tuner_gains()?;
     // info!(
