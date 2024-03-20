@@ -9,10 +9,12 @@ pub mod tuners;
 extern crate log;
 
 use core::fmt;
+use std::{io::Read, time::Duration};
 
 use device::Device;
 use error::Result;
 use rtlsdr::RtlSdr as Sdr;
+use tokio::io::AsyncRead;
 
 pub const DEFAULT_BUF_LENGTH: usize = 16 * 16384;
 
@@ -48,6 +50,38 @@ pub enum DirectSampleMode {
 
 pub struct RtlSdr {
     sdr: Sdr,
+}
+
+impl Read for RtlSdr {
+    fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
+        match self.read_sync(buf) {
+            Ok(len) => Ok(len),
+            Err(e) => Err(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                format!("Error reading from device: {:?}", e),
+            )),
+        }
+    }
+}
+
+impl AsyncRead for RtlSdr {
+    fn poll_read(
+        self: std::pin::Pin<&mut Self>,
+        _cx: &mut std::task::Context,
+        buf: &mut tokio::io::ReadBuf,
+    ) -> std::task::Poll<std::io::Result<()>> {
+        let mut buffer = vec![0; buf.remaining()];
+        match self.read_sync(&mut buffer) {
+            Ok(len) => {
+                buf.put_slice(&buffer[..len]);
+                std::task::Poll::Ready(Ok(()))
+            }
+            Err(e) => std::task::Poll::Ready(Err(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                format!("Error reading from device: {:?}", e),
+            ))),
+        }
+    }
 }
 
 impl RtlSdr {
