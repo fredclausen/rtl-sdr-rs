@@ -16,6 +16,8 @@ pub struct TunerInfo {
     // pub gains: Vec<i8>,
 }
 
+// TODO: Implement method to automatically detect best gain based on value passed in
+
 pub trait Tuner: std::fmt::Debug {
     fn init(&mut self, handle: &Device) -> Result<()>;
     fn get_info(&self) -> Result<TunerInfo>;

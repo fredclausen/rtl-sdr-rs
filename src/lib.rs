@@ -8,6 +8,8 @@ pub mod tuners;
 #[macro_use]
 extern crate log;
 
+use core::fmt;
+
 use device::Device;
 use error::Result;
 use rtlsdr::RtlSdr as Sdr;
@@ -19,6 +21,26 @@ pub enum TunerGain {
     Auto,
     Manual(i32),
 }
+
+// implement fmt::Display for TunerGain
+
+impl fmt::Display for TunerGain {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            TunerGain::Auto => write!(f, "Auto"),
+            TunerGain::Manual(gain) => write!(f, "Manual({})", gain),
+        }
+    }
+}
+
+impl From<i32> for TunerGain {
+    fn from(gain: i32) -> Self {
+        TunerGain::Manual(gain)
+    }
+}
+
+
+
 #[derive(Debug)]
 pub enum DirectSampleMode {
     Off,
