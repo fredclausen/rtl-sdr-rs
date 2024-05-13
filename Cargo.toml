@@ -10,13 +10,13 @@ rtl_sdr_blog = []
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rusb = "0.9.3"
+rusb = "0.9.4"
 byteorder = "1.5.0"
 log = "0.4.21"
 tokio = { version = "1.36.0", features = ["full", "tracing"] }
 
 [dev-dependencies]
-rusb = "0.9.3"
+rusb = "0.9.4"
 byteorder = "1.5.0"
 ctrlc = "3.4.4"
 num-complex = "0.4.6"
