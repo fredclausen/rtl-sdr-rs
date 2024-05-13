@@ -19,7 +19,7 @@ tokio = { version = "1.36.0", features = ["full", "tracing"] }
 rusb = "0.9.3"
 byteorder = "1.5.0"
 ctrlc = "3.4.4"
-num-complex = "0.4.5"
+num-complex = "0.4.6"
 stderrlog = "0.6.0"
 sdre-rust-logging = "0.3.1"
 mockall = "0.12.1"
