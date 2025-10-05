@@ -633,9 +633,9 @@ checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
 
 [[package]]
 name = "sdre-rust-logging"
-version = "0.3.20"
+version = "0.3.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f6cbe9900e983f20db17c2c564f7dbaa933b55a64e1d0ec0b1ce56340cf205c0"
+checksum = "a1263bfda52d884e8208ac2cd9b4d5f65000d16ce620cd3619880c53ea13fb5c"
 dependencies = [
  "anstyle",
  "chrono",
